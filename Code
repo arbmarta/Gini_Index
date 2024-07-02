@@ -1,0 +1,68 @@
+# This code provides a basic approach to calculating the Gini Index and Lorenz Curves when using Census boundary files.
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Read the dataset from Excel
+file_path = r'#path to your file'
+df = pd.read_excel(file_path)
+
+# Ensure the dataframe contains the necessary column
+proportions = df['Proportion']
+
+def gini_index(proportions):
+    # Sort the proportions
+    sorted_proportions = np.sort(proportions)
+
+    # Number of elements
+    n = len(proportions)
+
+    # Gini calculation
+    cumulative_proportions = np.cumsum(sorted_proportions) / np.sum(sorted_proportions)
+    gini = 1 - (2 * np.sum(cumulative_proportions) - 1) / n
+    return gini
+
+
+# Calculate the Gini index
+gini = gini_index(proportions)
+print(f'The Gini index is: {gini}')
+
+
+def lorenz_curve(proportions):
+    # Sort the proportions
+    sorted_proportions = np.sort(proportions)
+
+    # Calculate cumulative proportions
+    cumulative_proportions = np.cumsum(sorted_proportions) / np.sum(sorted_proportions)
+
+    # Add the origin point for the Lorenz curve
+    cumulative_proportions = np.insert(cumulative_proportions, 0, 0)
+
+    # Calculate the x-axis points
+    x = np.linspace(0, 1, len(cumulative_proportions))
+
+    return x, cumulative_proportions
+
+
+def plot_lorenz_curve(x, cumulative_proportions):
+    plt.figure(figsize=(8, 8))
+    plt.plot(x, cumulative_proportions, drawstyle='steps-post', label='Lorenz Curve')
+    plt.plot([0, 1], [0, 1], color='black', linestyle='--', label='Line of Equality')
+    plt.fill_between(x, cumulative_proportions, alpha=0.3)
+    plt.xlabel('Cumulative Population')
+    plt.ylabel('Cumulative Share of Trees')
+    plt.legend()
+    plt.grid(True)
+
+    # Set the x and y ticks to be percentages
+    plt.xticks(np.arange(0, 1.1, 0.2), [f'{int(i * 100)}%' for i in np.arange(0, 1.1, 0.2)])
+    plt.yticks(np.arange(0, 1.1, 0.2), [f'{int(i * 100)}%' for i in np.arange(0, 1.1, 0.2)])
+
+    plt.show()
+
+# Generate Lorenz curve data
+x, cumulative_proportions = lorenz_curve(proportions)
+
+# Plot the Lorenz curve
+plot_lorenz_curve(x, cumulative_proportions)
